@@ -43,7 +43,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/super-mario-app:latest
   
   ec2:
-
+    needs: [docker]
     name: Connect to EC2 instance and deploy the Docker image
     runs-on: ubuntu-latest
     env: 
@@ -51,12 +51,12 @@ jobs:
       EC2_URL: ${{ secrets.EC2_URL }}
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
     steps:
-    
+
       -
         name: Setup SSH for EC2
         uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
         with:
-          EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
+          EC2_SSH_PRIVATE_KEY: $EC2_SSH_KEY
           EC2_URL: $EC2_URL
       - 
         name: Deploy new container image on EC2
