@@ -56,7 +56,7 @@ jobs:
         name: Setup SSH for EC2
         uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
         with:
-          EC2_SSH_PRIVATE_KEY: $EC2_SSH_KEY
+          EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
           EC2_URL: $EC2_URL
       - 
         name: Deploy new container image on EC2
