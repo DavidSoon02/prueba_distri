@@ -1,11 +1,23 @@
-name: Setup SSH for EC2 instance
+name: Deploy App on EC2 on Pull Request Merged
 
 on:
-  push:
-    branches:
-      - master
+  pull_request:
+    branches: [master]
+    types: [closed]
+
+permissions:
+  contents: read
+  deployments: write
 
 jobs:
+  verify:
+    name: Check whether a pull request has been merged
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Success Message
+        run: echo "🎉 A pull request is merged by ${{ github.event.pull_request.merged_by.login}}"
   ec2:
     needs: [docker]
     name: Connect to EC2 instance and deploy the Docker image
