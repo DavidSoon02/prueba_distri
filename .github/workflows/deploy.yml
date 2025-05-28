@@ -59,19 +59,19 @@ jobs:
           EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
           EC2_URL: $EC2_URL
       - 
+
         name: Deploy new container image on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'EOF'
-         
-          sudo docker rm super-mario-app || true
+          ssh -o StrictHostKeyChecking=no -T ${{ env.EC2_USERNAME }}@${{ env.EC2_URL }} /bin/bash << 'EOSSH'
+          sudo docker rm -f super-mario-app || true
+
           sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/super-mario-app || true
 
           sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/super-mario-app
-
+          
           sudo docker run -d \
-            --name super-mario-app \ 
-
-            -p 3000:80 \
+           --name super-mario-app \
+           -p 3000:80 \
             ${{ secrets.DOCKERHUB_USERNAME }}/super-mario-app
-
-          EOF
+             EOSSH
+    
