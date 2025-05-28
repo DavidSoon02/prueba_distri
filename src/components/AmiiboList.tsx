@@ -31,7 +31,7 @@ const AmiiboList: React.FC = () => {
 
   return (
     <div>
-      <h2>Personajes de Mario (Amiibo API)</h2>
+      <h2>Estos son los amibos de la API</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
         {characters.map((char) => (
           <div key={char.id} style={{ border: '1px solid #ccc', padding: '1rem', width: '200px' }}>
