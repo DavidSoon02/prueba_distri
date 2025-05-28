@@ -4,7 +4,7 @@ import MarioCharacters from './components/AmiiboList';
 const App: React.FC = () => {
   return (
     <div>
-      <h1>Super Mario API en React</h1>
+      <h1>Super Mario API en React Saludos</h1>
       <MarioCharacters />
     </div>
   );

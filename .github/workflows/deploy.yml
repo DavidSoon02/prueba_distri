@@ -6,18 +6,67 @@ on:
       - master
 
 jobs:
-  setup-ssh:
+  ec2:
+    needs: [docker]
+    name: Connect to EC2 instance and deploy the Docker image
     runs-on: ubuntu-latest
-    env:
+    env: 
       EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
       EC2_URL: ${{ secrets.EC2_URL }}
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
     steps:
-    - name: Setup SSH for EC2
-      uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
-      with:
+      -
+        name: Setup SSH for EC2
+        uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
+        with:
           EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
           EC2_URL: $EC2_URL
-    # then you can run commands/scripts directly on the EC2 instance e.g.:
-    - name: Create a new file on the EC2 instance with "hello-world"
-      run: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL "echo "hello-world" >> new_file.txt"
+      - 
+        name: Deploy new container image on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'EOF'
+          sudo docker start postgres_db
+          sudo docker stop ${{ secrets.PROJECT_NAME }}
+
+          sudo docker rm ${{ secrets.PROJECT_NAME }} || true
+          sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }} || true
+
+          sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}
+
+          sudo docker run -d \
+            --name ${{ secrets.PROJECT_NAME }} \
+            -e "DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            -p 5000:5000 \
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}
+
+          EOF
+
+  docker:
+    needs: [verify, deploy]
+    name: Build container image and push to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:latest
