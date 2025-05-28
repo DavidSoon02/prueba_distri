@@ -69,7 +69,7 @@ jobs:
           sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/super-mario-app
 
           sudo docker run -d \
-            --name super-mario-app \
+            --name super-mario-app \ 
 
             -p 3000:80 \
             ${{ secrets.DOCKERHUB_USERNAME }}/super-mario-app
